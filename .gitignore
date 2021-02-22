@@ -1,0 +1,11 @@
+# Whitelisting gud
+*
+!.gitignore
+!composer.json
+!ImageWrapper.php
+!LICENSE.md
+!README.md
+!ImageTypes/
+!ImageTypes/*
+!Exception
+!Exception/*

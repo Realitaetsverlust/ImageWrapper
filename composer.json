@@ -1,0 +1,25 @@
+{
+  "name": "realitaetsverlust/imagewrapper",
+  "type": "library",
+  "description": "An OOP-Wrapper for images in PHP",
+  "keywords": [],
+  "license": "WTFPL",
+  "minimum-stability": "dev",
+  "authors": [
+    {
+      "name": "Realitaetsverlust",
+      "email": "realitaetsverlust@realitaetsverlust.rocks",
+      "role": "Lead Developer"
+    }
+  ],
+  "require": {
+    "php": ">= 7.4",
+    "ext-exif": "*",
+    "ext-gd": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Realitaetsverlust\\Wrapper\\": "./"
+    }
+  }
+}
