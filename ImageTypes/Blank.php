@@ -12,8 +12,8 @@ class Blank extends ImageBase {
     /**
      * Overload parent constructor to avoid unnecessary routines being fired.
      */
-    public function __construct() {
-        $this->resource = imagecreatetruecolor(500, 500);
+    public function __construct(int $width, int $height) {
+        $this->resource = imagecreatetruecolor($width, $height);
     }
 
     /**

@@ -28,6 +28,12 @@ abstract class ImageBase implements ImageInterface {
     protected string $fileType;
 
     /**
+     * Image size, loaded in constructor
+     * @var array
+     */
+    protected array $imageSize;
+
+    /**
      * ImageBase constructor.
      * @param string|null $imagePath
      */
@@ -39,6 +45,7 @@ abstract class ImageBase implements ImageInterface {
 
         if($imagePath !== null) {
             $this->resource = call_user_func($this->inputFunction, $imagePath);
+            $this->imageSize = getimagesize($imagePath);
         }
     }
 
@@ -80,4 +87,17 @@ abstract class ImageBase implements ImageInterface {
     public function getFileType() {
         return $this->fileType;
     }
+
+    /**
+     * Returns the image size as array.
+     *
+     * WARNING: Image size is set on construction of the object. If you perform individual changes, like adding text,
+     * the size will not be updated.
+     *
+     * @return array|false
+     */
+    public function getImageSize() : array {
+        return $this->imageSize;
+    }
+
 }
