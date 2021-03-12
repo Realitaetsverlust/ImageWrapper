@@ -47,9 +47,9 @@ class ImageWrapper {
     public ImageInterface $image;
 
     /**
-     * @var mixed|string
+     * @var string
      */
-    private $imageName;
+    private string $imageName;
 
     /**
      * ImageWrapper constructor.
@@ -64,7 +64,7 @@ class ImageWrapper {
      * @throws NoLoaderForImageException
      * @throws UnrecognizedFiletypeException
      */
-    public function __construct($imagePathOrWidth = null, int $height = null) {
+    public function __construct(string|int $imagePathOrWidth = null, int $height = null) {
         if(is_int($imagePathOrWidth)) {
             if($height === null) {
                 throw new HeightForBlankImageNotSetException();
@@ -215,7 +215,7 @@ class ImageWrapper {
     }
 
     /**
-     * Draws an arc
+     * Draws an arc. if $style is passed, the arc will be filled
      *
      * @param int $cx
      * @param int $cy
@@ -224,10 +224,15 @@ class ImageWrapper {
      * @param int $start
      * @param int $end
      * @param int $color
+     * @param int|null $style
      * @return ImageWrapper $this
      */
-    public function drawArc(int $cx, int $cy, int $width, int $height, int $start, int $end, int $color) : ImageWrapper {
-        imagearc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $color);
+    public function drawArc(int $cx, int $cy, int $width, int $height, int $start, int $end, int $color, int $style = null) : ImageWrapper {
+        if($style) {
+            imagefilledarc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $color, $style);
+        } else {
+            imagearc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $color);
+        }
         return $this;
     }
 
@@ -277,7 +282,8 @@ class ImageWrapper {
     public function cutPartial(int $x, int $y, int $width, int $height) : ImageWrapper {
         $cutImage = new ImageWrapper($width, $height);
         imagecopy($cutImage->image->getResource(), $this->image->getResource(), 0, 0, $x, $y, $width, $height);
-        return $cutImage;
+        $this->image->loadResource($cutImage->image->getResource());
+        return $this;
     }
 
     /**
@@ -310,7 +316,7 @@ class ImageWrapper {
     }
 
     /**
-     * Draws an ellipse
+     * Draws an ellipse. If $fill isp passed, the ellipse will be filled with the passed color.
      *
      * @param int $x
      * @param int $y
@@ -319,8 +325,12 @@ class ImageWrapper {
      * @param int $color
      * @return $this
      */
-    public function drawEllipse(int $x , int $y , int $width , int $height , int $color) : ImageWrapper {
-        imageellipse($this->image->getResource(), $x, $y, $width, $height, $color);
+    public function drawEllipse(int $x , int $y , int $width , int $height , int $color, bool $fill = false) : ImageWrapper {
+        if($fill) {
+            imagefilledellipse($this->image->getResource(), $x, $y, $width, $height, $color);
+        } else {
+            imageellipse($this->image->getResource(), $x, $y, $width, $height, $color);
+        }
         return $this;
     }
 
@@ -337,6 +347,228 @@ class ImageWrapper {
         return $this;
     }
 
-    
 
+    /**
+     * Draws a polygon. If $fill is passed, the polygon will be filled with the passed color.
+     *
+     * @param array $points
+     * @param int $numberOfPoints
+     * @param int $color
+     * @param bool $fill
+     * @return $this
+     */
+    public function drawPolygon(array $points, int $numberOfPoints, int $color, bool $fill = false) : ImageWrapper {
+        if($fill) {
+            imagefilledpolygon($this->image->getResource(), $points, $numberOfPoints, $color);
+        } else {
+            imagepolygon($this->image->getResource(), $points, $numberOfPoints, $color);
+        }
+        return $this;
+    }
+
+    /**
+     * Draws a rectangle. If $fill is passed, the rectangle will be filled with the given color.
+     *
+     * @param int $topLeft
+     * @param int $topRight
+     * @param int $bottomLeft
+     * @param int $bottomRight
+     * @param int $color
+     * @param bool $fill
+     */
+    public function drawRectangle(int $topLeft, int $topRight, int $bottomLeft, int $bottomRight, int $color, bool $fill = false) {
+        if($fill) {
+            imagefilledrectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $color);
+        } else {
+            imagerectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $color);
+        }
+    }
+
+    /**
+     * Inverts the color of an image (white to black, black to white etc)
+     *
+     * @param int $filterType
+     * @return ImageWrapper
+     */
+    public function invertColors() : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_NEGATE);
+        return $this;
+    }
+
+    /**
+     * Convert image into a grayscale image. Alpha components are retained.
+     *
+     * @return $this
+     */
+    public function grayscaleImage() : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_GRAYSCALE);
+        return $this;
+    }
+
+    /**
+     * Set brightness of given image
+     *
+     * @param int $brightness
+     * @return ImageWrapper
+     */
+    public function setBrightness(int $brightness) : ImageWrapper {
+        $brightness = $brightness > 255 ? 255 : $brightness;
+        $brightness = $brightness < -255 ? -255 : $brightness;
+        imagefilter($this->image->getResource(), IMG_FILTER_BRIGHTNESS, $brightness);
+        return $this;
+    }
+
+    /**
+     * Sets contrast of the given image
+     *
+     * @param int $contrast
+     * @return ImageWrapper
+     */
+    public function setContrast(int $contrast) : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_CONTRAST, $contrast);
+        return $this;
+    }
+
+    /**
+     * Colorizes an image
+     *
+     * @param int $red
+     * @param int $green
+     * @param int $blue
+     * @param int $alpha
+     * @return ImageWrapper
+     */
+    public function colorize(int $red, int $green, int $blue, int $alpha) : ImageWrapper {
+        $alpha = $alpha > 127 ? 127 : $alpha;
+        $alpha = $alpha < 0 ? 0 : $alpha;
+        $red = $red > 255 ? 255 : $red;
+        $red = $red < 0 ? 0 : $red;
+        $green = $green > 255 ? 255 : $green;
+        $green = $green < 0 ? 0 : $green;
+        $blue = $blue > 255 ? 255 : $blue;
+        $blue = $blue < 0 ? 0 : $blue;
+
+        imagefilter($this->image->getResource(), IMG_FILTER_COLORIZE, $red, $green, $blue, $alpha);
+
+        return $this;
+    }
+
+    /**
+     * Uses edge detection to highlight the edges in the image.
+     *
+     * @return ImageWrapper
+     */
+    public function edgedetect() {
+        imagefilter($this->image->getResource(), IMG_FILTER_EDGEDETECT);
+        return $this;
+    }
+
+    /**
+     * Embosses the image
+     *
+     * @return ImageWrapper
+     */
+    public function emboss() : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_EMBOSS);
+        return $this;
+    }
+
+    /**
+     * Blurs an image. If $useGauss is passed, the gauss blur will be used instead of the selective blur
+     *
+     * @param bool $useGauss
+     * @return ImageWrapper
+     */
+    public function blur(bool $useGauss = false) : ImageWrapper {
+        if($useGauss) {
+            imagefilter($this->image->getResource(), IMG_FILTER_GAUSSIAN_BLUR);
+        } else {
+            imagefilter($this->image->getResource(), IMG_FILTER_SELECTIVE_BLUR);
+        }
+
+        return $this;
+    }
+
+    /**
+     *  TODO: Figure out what this "sketchy" effect is
+     */
+    public function sketchImage() : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_MEAN_REMOVAL);
+        return $this;
+    }
+
+    /**
+     * @param int $smoothness
+     * @return ImageWrapper
+     */
+    public function smooth(int $smoothness) : ImageWrapper {
+        imagefilter($this->image->getResource(), IMG_FILTER_SMOOTH, $smoothness);
+        return $this;
+    }
+
+    /**
+     * Pixelates an image.
+     *
+     * @param int $blockSize
+     * @param bool $advancedPixelationMode
+     * @return ImageWrapper
+     */
+    public function pixelate(int $blockSize, bool $advancedPixelationMode = false) : ImageWrapper {
+        imagefilter($this->image->getResource(), $blockSize, $advancedPixelationMode);
+        return $this;
+    }
+
+    /**
+     * Applies a scatter effect to the image.
+     *
+     * @param int $effectSubstractionLevel
+     * @param int $effectAdditionLevel
+     * @param array $onlyApplyTo
+     * @return ImageWrapper
+     */
+    public function scatter(int $effectSubstractionLevel, int $effectAdditionLevel, array $onlyApplyTo = []) : ImageWrapper {
+        if($effectSubstractionLevel >= $effectAdditionLevel) {
+            //@TODO: Throw exception
+        }
+
+        imagefilter($this->image->getResource(), $effectSubstractionLevel, $effectAdditionLevel, $onlyApplyTo);
+
+        return $this;
+    }
+
+    /**
+     * @param float $inputGamma
+     * @param float $outputGamma
+     * @return ImageWrapper
+     */
+    public function gammaCorrection(float $inputGamma, float $outputGamma) : ImageWrapper {
+        imagefilter($this->image->getResource(), $inputGamma, $outputGamma);
+        return $this;
+    }
+
+    /**
+     * Flips the image using the given mode
+     *
+     * @param int $mode
+     * @return $this
+     */
+    public function flip(int $mode) : ImageWrapper {
+        imageflip($this->image->getResource(), $mode);
+        return $this;
+    }
+
+    /**
+     * Set the interlace mode
+     *
+     * @param bool $interlaceMode
+     * @return $this
+     */
+    public function setInterlace(bool $interlaceMode) : ImageWrapper {
+        imageinterlace($interlaceMode);
+        return $this;
+    }
+
+    public function isTrueColor() : bool {
+        return imageistruecolor($this->image->getResource());
+    }
 }

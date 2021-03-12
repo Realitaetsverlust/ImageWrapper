@@ -2,12 +2,14 @@
 
 namespace Realitaetsverlust\Wrapper\ImageTypes;
 
+use GdImage;
+
 abstract class ImageBase implements ImageInterface {
     /**
      * The currently used image resource
-     * @var false|mixed
+     * @var GdImage
      */
-    protected $resource;
+    protected GdImage $resource;
 
     /**
      * The output function. Differs from filetype to filetype. Set in constructor
