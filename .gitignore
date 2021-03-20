@@ -1,8 +1,9 @@
 # Whitelisting gud
 *
+!Color.php
+!ImageFactory.php
 !.gitignore
 !composer.json
-!ImageFactory.php
 !LICENSE.md
 !README.md
 !ImageTypes/
