@@ -15,11 +15,4 @@ class Bmp extends ImageBase {
         }
         imagebmp($this->getResource(), $destination, $compressed);
     }
-
-    /**
-     * Sends the headers for the image type. Is called by output() if no destination is given, or can be called manually
-     */
-    public function sendHeaders() : void {
-        header('Content-Type: image/bmp');
-    }
 }

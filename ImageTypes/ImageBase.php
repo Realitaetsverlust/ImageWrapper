@@ -53,6 +53,13 @@ abstract class ImageBase {
     protected int $maxQuality;
 
     /**
+     * Sets the mime type of the image
+     *
+     * @var string
+     */
+    protected string $mimeType;
+
+    /**
      * All colors that have been allocated by allocateColor()
      *
      * @var array
@@ -68,6 +75,7 @@ abstract class ImageBase {
         $this->fileType = strtolower($reflect->getShortName());
         $this->inputFunction = "imagecreatefrom{$this->fileType}";
         $this->outputFunction = "image{$this->fileType}";
+        $this->mimeType = image_type_to_mime_type(exif_imagetype($imagePath));
 
         if($imagePath !== null) {
             $imageResource = call_user_func($this->inputFunction, $imagePath);
@@ -80,6 +88,19 @@ abstract class ImageBase {
         }
     }
 
+    /**
+     * Sends the headers for the image type. Is called by output() if no destination is given, or can be called manually
+     */
+    public function sendHeaders() : void {
+        header("Content-Type: $this->mimeType");
+    }
+
+    /**
+     * Converts an image to another image type.
+     *
+     * @param ImageBase $imageType
+     * @return ImageBase
+     */
     public function convert(ImageBase $imageType): ImageBase {
         $desiredType = new $imageType;
         $desiredType->resource = $this->resource;

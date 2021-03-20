@@ -22,11 +22,4 @@ class Wbmp extends ImageBase {
         }
         return imagewbmp($this->getResource(), $destination, $this->allocateColor($color));
     }
-
-    /**
-     * Sends the headers for the image type. Is called by output() if no destination is given, or can be called manually
-     */
-    public function sendHeaders() {
-        header('Content-Type: image/vnd.wap.wbmp');
-    }
 }
