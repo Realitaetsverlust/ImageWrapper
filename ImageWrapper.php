@@ -2,6 +2,7 @@
 
 namespace Realitaetsverlust\Wrapper;
 
+use Realitaetsverlust\Wrapper\Exception\ColorCouldNotBeAllocatedException;
 use Realitaetsverlust\Wrapper\Exception\HeightForBlankImageNotSetException;
 use Realitaetsverlust\Wrapper\Exception\NoLoaderForImageException;
 use Realitaetsverlust\Wrapper\Exception\UnrecognizedFiletypeException;
@@ -44,7 +45,7 @@ class ImageWrapper {
      *
      * @var ImageInterface|Blank|Bmp|Gif|Jpeg|Png|Wbmp|Webp|Xbm
      */
-    public ImageInterface $image;
+    protected ImageInterface $image;
 
     /**
      * @var string
@@ -52,10 +53,15 @@ class ImageWrapper {
     private string $imageName;
 
     /**
+     * @var array
+     */
+    private array $colorPallet;
+
+    /**
      * ImageWrapper constructor.
      *
      * Bit confusing, but nicer to use for the end user. $imagePathOrWidth can either be a directory string pointing to
-     * a file, or it can be an integer designating the width of the image. In th last case, height has to be declared as
+     * a file, or it can be an integer designating the width of the image. In the last case, height has to be declared as
      * well in order for imagecreate() to work in the constructor of Blank(). It's not the nicest thing codewise, but
      * I believe it is the easiest for a user because we don't need any init functions for Blank().
      *
@@ -227,11 +233,12 @@ class ImageWrapper {
      * @param int|null $style
      * @return ImageWrapper $this
      */
-    public function drawArc(int $cx, int $cy, int $width, int $height, int $start, int $end, int $color, int $style = null) : ImageWrapper {
+    public function drawArc(int $cx, int $cy, int $width, int $height, int $start, int $end, Color $color, int $style = null) : ImageWrapper {
+        $allocatedColor = $this->allocateColor($color);
         if($style) {
-            imagefilledarc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $color, $style);
+            imagefilledarc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $allocatedColor, $style);
         } else {
-            imagearc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $color);
+            imagearc($this->image->getResource(), $cx, $cy, $width, $height, $start, $end, $allocatedColor);
         }
         return $this;
     }
@@ -310,8 +317,8 @@ class ImageWrapper {
      * @param int $color
      * @return $this
      */
-    public function drawDashedLine(int $srcX, int $srcY, int $destX, int $destY, int $color) : ImageWrapper {
-        imageline($this->image->getResource(), $srcX, $srcY, $destX, $destY, $color);
+    public function drawDashedLine(int $srcX, int $srcY, int $destX, int $destY, Color $color) : ImageWrapper {
+        imageline($this->image->getResource(), $srcX, $srcY, $destX, $destY, $this->allocateColor($color));
         return $this;
     }
 
@@ -325,11 +332,11 @@ class ImageWrapper {
      * @param int $color
      * @return $this
      */
-    public function drawEllipse(int $x , int $y , int $width , int $height , int $color, bool $fill = false) : ImageWrapper {
+    public function drawEllipse(int $x , int $y , int $width , int $height , Color $color, bool $fill = false) : ImageWrapper {
         if($fill) {
-            imagefilledellipse($this->image->getResource(), $x, $y, $width, $height, $color);
+            imagefilledellipse($this->image->getResource(), $x, $y, $width, $height, $this->allocateColor($color));
         } else {
-            imageellipse($this->image->getResource(), $x, $y, $width, $height, $color);
+            imageellipse($this->image->getResource(), $x, $y, $width, $height, $this->allocateColor($color));
         }
         return $this;
     }
@@ -342,8 +349,8 @@ class ImageWrapper {
      * @param int $color
      * @return $this
      */
-    public function fill(int $x, int $y, int $color) : ImageWrapper {
-        imagefill($this->image->getResource(), $x, $y, $color);
+    public function fill(int $x, int $y, Color $color) : ImageWrapper {
+        imagefill($this->image->getResource(), $x, $y, $this->allocateColor($color));
         return $this;
     }
 
@@ -357,11 +364,11 @@ class ImageWrapper {
      * @param bool $fill
      * @return $this
      */
-    public function drawPolygon(array $points, int $numberOfPoints, int $color, bool $fill = false) : ImageWrapper {
+    public function drawPolygon(array $points, int $numberOfPoints, Color $color, bool $fill = false) : ImageWrapper {
         if($fill) {
-            imagefilledpolygon($this->image->getResource(), $points, $numberOfPoints, $color);
+            imagefilledpolygon($this->image->getResource(), $points, $numberOfPoints, $this->allocateColor($color));
         } else {
-            imagepolygon($this->image->getResource(), $points, $numberOfPoints, $color);
+            imagepolygon($this->image->getResource(), $points, $numberOfPoints, $this->allocateColor($color));
         }
         return $this;
     }
@@ -376,11 +383,11 @@ class ImageWrapper {
      * @param int $color
      * @param bool $fill
      */
-    public function drawRectangle(int $topLeft, int $topRight, int $bottomLeft, int $bottomRight, int $color, bool $fill = false) {
+    public function drawRectangle(int $topLeft, int $topRight, int $bottomLeft, int $bottomRight, Color $color, bool $fill = false) {
         if($fill) {
-            imagefilledrectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $color);
+            imagefilledrectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $this->allocateColor($color));
         } else {
-            imagerectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $color);
+            imagerectangle($this->image->getResource(), $topLeft, $topRight, $bottomLeft, $bottomRight, $this->allocateColor($color));
         }
     }
 
@@ -438,7 +445,12 @@ class ImageWrapper {
      * @param int $alpha
      * @return ImageWrapper
      */
-    public function colorize(int $red, int $green, int $blue, int $alpha) : ImageWrapper {
+    public function colorize(Color $color) : ImageWrapper {
+        $red = $color->getRed();
+        $green = $color->getGreen();
+        $blue = $color->getBlue();
+        $alpha = $color->getAlpha();
+
         $alpha = $alpha > 127 ? 127 : $alpha;
         $alpha = $alpha < 0 ? 0 : $alpha;
         $red = $red > 255 ? 255 : $red;
@@ -568,7 +580,22 @@ class ImageWrapper {
         return $this;
     }
 
+    /**
+     * Determines if an image is a true color image
+     * @return bool
+     */
     public function isTrueColor() : bool {
         return imageistruecolor($this->image->getResource());
+    }
+
+    public function allocateColor(Color $color) : false|int {
+        $allocatedColor = imagecolorallocatealpha($this->image->getResource(), $color->getRed(), $color->getGreen(), $color->getBlue(), $color->getAlpha());
+
+        if($allocatedColor === false) {
+            throw new ColorCouldNotBeAllocatedException("The passed color object could not be allocated. Please check the parameters.");
+        }
+
+        $this->colorPallet[] = $allocatedColor;
+        return $allocatedColor;
     }
 }
