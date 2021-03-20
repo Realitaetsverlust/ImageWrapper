@@ -17,7 +17,7 @@ class Blank extends ImageBase {
     }
 
     /**
-     * Overload output function to avoid output. An image created by PHP is an resource and has no filetype, therefore
+     * Overload output function to avoid output. An image created by PHP is a GDImage and has no filetype, therefore
      * it can't be saved yet.
      *
      * @param string|null $destination
@@ -25,7 +25,7 @@ class Blank extends ImageBase {
      * @return mixed|void
      * @throws NoFiletypeSetException
      */
-    public function output(string $destination = null, int $quality = null) {
-        throw new NoFiletypeSetException("Image does not posses a filetype. Please use `convert()` to convert it into a image file before attempting an output.");
+    public function output() {
+        throw new NoFiletypeSetException();
     }
 }
