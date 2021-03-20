@@ -2,7 +2,7 @@
 *
 !.gitignore
 !composer.json
-!ImageWrapper.php
+!ImageFactory.php
 !LICENSE.md
 !README.md
 !ImageTypes/
