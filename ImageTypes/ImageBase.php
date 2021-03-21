@@ -162,7 +162,7 @@ abstract class ImageBase {
      *
      * @return false|mixed
      */
-    public function getResource() {
+    protected function getResource(): GdImage {
         return $this->resource;
     }
 
@@ -172,7 +172,7 @@ abstract class ImageBase {
      * @param $resource
      * @return mixed|void
      */
-    public function loadResource($resource) {
+    protected function loadResource($resource): void {
         $this->resource = $resource;
     }
 
@@ -181,7 +181,7 @@ abstract class ImageBase {
      *
      * @return string
      */
-    public function getFileType() {
+    public function getFileType(): string {
         return $this->fileType;
     }
 
@@ -302,7 +302,7 @@ abstract class ImageBase {
     }
 
     /**
-     * Crops image to given
+     * Crops image to given dimension
      *
      * @param int $x
      * @param int $y
@@ -478,7 +478,7 @@ abstract class ImageBase {
      *
      * @return ImageBase
      */
-    public function edgedetect() {
+    public function edgedetect(): ImageBase {
         imagefilter($this->resource, IMG_FILTER_EDGEDETECT);
         return $this;
     }
@@ -510,7 +510,7 @@ abstract class ImageBase {
     }
 
     /**
-     *  TODO: Figure out what this "sketchy" effect is
+     *  Transforms the image to have a sketchy look
      */
     public function sketchImage(): ImageBase {
         imagefilter($this->resource, IMG_FILTER_MEAN_REMOVAL);
@@ -518,6 +518,8 @@ abstract class ImageBase {
     }
 
     /**
+     * Smoothes the iamge
+     *
      * @param int $smoothness
      * @return ImageBase
      */
@@ -557,6 +559,8 @@ abstract class ImageBase {
     }
 
     /**
+     * Gamma correction method
+     *
      * @param float $inputGamma
      * @param float $outputGamma
      * @return ImageBase
@@ -567,7 +571,7 @@ abstract class ImageBase {
     }
 
     /**
-     * Flips the image using the given mode
+     * Flips the image using the given mode. Modes are IMG_FLIP_HORIZONTAL, IMG_FLIP_VERTICAL and IMG_FLIP_BOTH
      *
      * @param int $mode
      * @return $this
@@ -578,18 +582,19 @@ abstract class ImageBase {
     }
 
     /**
-     * Set the interlace mode
+     * Enables/Disables interlace
      *
      * @param bool $interlaceMode
      * @return $this
      */
-    public function setInterlace(bool $interlaceMode): ImageBase {
-        imageinterlace($this->resource, $interlaceMode);
+    public function setInterlace(bool $enable): ImageBase {
+        imageinterlace($this->resource, $enable);
         return $this;
     }
 
     /**
      * Determines if an image is a true color image
+     *
      * @return bool
      */
     public function isTrueColor(): bool {
