@@ -5,6 +5,12 @@ ImageWrapper is one of my simplistic OOP Wrappers for PHP. My goal with this pro
 
 Keep in mind that this software is still in development. It's currently in a state that is absolutely useable in productive environments, but it may have occasional bugs here and there, especially with older GDLb versions. If you notice a bug, please leave an issue, stating exactly the PHP Version and GDLib version you're using.
 
+#### Installation:
+
+You can easiely install ImageWrapper via composer:
+
+`composer require realitaetsverlust/imagewrapper`
+
 #### What can ImageWrapper do for you:
 
 - Load, edit, convert and output images of any kind with ease
