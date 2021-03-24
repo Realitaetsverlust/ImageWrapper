@@ -75,9 +75,9 @@ abstract class ImageBase {
         $this->fileType = strtolower($reflect->getShortName());
         $this->inputFunction = "imagecreatefrom{$this->fileType}";
         $this->outputFunction = "image{$this->fileType}";
-        $this->mimeType = image_type_to_mime_type(exif_imagetype($imagePath));
 
         if($imagePath !== null) {
+            $this->mimeType = image_type_to_mime_type(exif_imagetype($imagePath));
             $imageResource = call_user_func($this->inputFunction, $imagePath);
 
             if($imageResource === false) {
