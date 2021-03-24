@@ -311,7 +311,17 @@ abstract class ImageBase {
      * @return $this
      */
     public function crop(int $x, int $y, int $width, int $height): ImageBase {
-        imagecrop($this->resource, [$x, $y, $width, $height]);
+        $resource = imagecrop($this->resource, [
+            'x' => $x,
+            'y' => $y,
+            'width' => $width,
+            'height' => $height
+        ]);
+
+        if($resource) {
+            $this->resource = $resource;
+        }
+
         return $this;
     }
 
