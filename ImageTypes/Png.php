@@ -21,6 +21,6 @@ class Png extends ImageBase {
             $this->sendHeaders();
         }
 
-        return imagejpeg($this->resource, $destination, $quality);
+        return imagepng($this->resource, $destination, $quality);
     }
 }
